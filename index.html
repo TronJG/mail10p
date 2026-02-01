@@ -1,215 +1,159 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mail 10 phút – DropMail GraphQL (WebSocket) – HTML/CSS/JS</title>
-  <style>
-    :root{--bg:#ffffff;--panel:#f7faf7;--soft:#d9e7db;--text:#1b1f1c;--muted:#57635b;--accent:#31c36a;--accent-2:#22a455;--error:#e03131;--shadow:0 10px 30px rgba(0,0,0,.06);--radius:16px}
-    *{box-sizing:border-box}html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    .wrap{max-width:1000px;margin:0 auto;padding:18px}
-    header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:6px 0 14px}
-    .brand{display:flex;gap:10px;align-items:center}
-    .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#fff;font-weight:700}
-    h1{font-size:20px;margin:0}.muted{color:var(--muted);font-size:14px}
-    .panel{background:var(--panel);border:1px solid var(--soft);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
-    .grid{display:grid;gap:14px}.grid.cols{grid-template-columns:1.2fr .8fr}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .badge{display:inline-flex;align-items:center;gap:8px;background:#e9f7ef;color:#0f5132;border:1px solid #cfe8d9;padding:8px 10px;border-radius:12px;font-size:13px}
-    .address{display:flex;gap:8px;align-items:center}
-    input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--soft);border-radius:12px;background:#fff}
-    button{border:0;background:var(--accent);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600;box-shadow:0 2px 0 rgba(0,0,0,.05)}
-    button.ghost{background:#e8f7ee;color:#0f5132}button.warn{background:var(--error)}button:disabled{opacity:.6;cursor:not-allowed}
-    .list{display:grid;gap:10px}
-    .item{background:#fff;border:1px solid var(--soft);border-radius:14px;padding:10px;display:grid;gap:6px;cursor:pointer}
-    .item:hover{outline:2px solid #d6f3e2}
-    .item .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .item .from{font-weight:600}.item .subject{color:#0f5132}.item .intro{color:var(--muted);font-size:13px}
-    .pill{font-size:12px;padding:4px 8px;border-radius:999px;background:#eef8f2;border:1px solid #cfe8d9;color:#0f5132}
-    .right{background:#fff;border:1px solid var(--soft);border-radius:14px;min-height:300px}
-    .right header{padding:10px 12px;border-bottom:1px solid var(--soft)}
-    .viewer{height:420px}iframe{width:100%;height:100%;border:0;border-radius:0 0 14px 14px}
-    .empty{padding:18px;text-align:center;color:var(--muted)}
-    .error{background:#fdecec;color:#8a2121;border:1px solid #f5b5b5;border-radius:12px;padding:10px}
-    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
-    @media (max-width:900px){.grid.cols{grid-template-columns:1fr}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Tạm Thời - Cũ nhưng Nhanh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .mail-card { transition: all 0.2s; border-left: 3px solid transparent; }
+        .mail-card:hover { border-left-color: #3b82f6; background-color: #f1f5f9; }
+        .loader-bar { height: 2px; width: 100%; background: #e2e8f0; position: relative; overflow: hidden; }
+        .loader-bar::after { content: ""; position: absolute; left: -50%; height: 100%; width: 50%; background: #3b82f6; animation: loading 1.2s infinite; }
+        @keyframes loading { 0% { left: -50%; } 100% { left: 100%; } }
+    </style>
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="logo">DM</div>
-        <div>
-          <h1>Mail 10 phút – Client dùng <span style="color:var(--accent-2)">DropMail GraphQL (WebSocket)</span></h1>
-          <div class="muted">Tránh lỗi CORS bằng WebSocket; có fallback HTTP nếu WS lỗi.</div>
-        </div>
-      </div>
-      <div class="row">
-        <button id="btnNew">Tạo phiên mới</button>
-        <button id="btnRefresh" class="ghost">Làm mới</button>
-      </div>
-    </header>
+<body class="p-4 md:p-8">
 
-    <div class="panel grid cols">
-      <div class="grid" style="align-content:start">
-        <div class="panel" style="padding:12px">
-          <div class="row" style="align-items:center;justify-content:space-between">
-            <div class="address" style="flex:1">
-              <span class="badge">Địa chỉ</span>
-              <input type="text" id="address" readonly>
-              <button id="btnCopy" class="ghost">Sao chép</button>
+    <div class="max-w-xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="mail" class="text-blue-600 w-5 h-5"></i>
+                    <h1 class="font-bold text-slate-800 uppercase tracking-tight text-sm">Hệ thống quét cũ</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span class="text-[10px] font-bold text-slate-400">LIVE SCAN</span>
+                </div>
             </div>
-          </div>
-          <div class="row" style="margin-top:8px">
-            <div style="flex:1">
-              <input type="text" id="sessionId" placeholder="Session ID" readonly>
+
+            <div class="p-5">
+                <div class="flex gap-2 mb-4">
+                    <input id="prefix" type="text" placeholder="Tên mail..." class="flex-grow px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 text-sm">
+                    <select id="domains" class="bg-white border border-slate-200 rounded-lg px-2 text-xs font-semibold"></select>
+                </div>
+                <button onclick="createMail()" id="btn-create" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-sm hover:bg-blue-700 transition-all">
+                    TẠO EMAIL MỚI
+                </button>
             </div>
-            <div style="display:flex;gap:8px">
-              <button id="btnAddAddr" class="ghost" title="Thêm địa chỉ vào cùng phiên">+ Địa chỉ</button>
-              <button id="btnReset" class="warn" title="Xoá phiên & tạo lại">Reset</button>
+
+            <div id="active-info" class="hidden p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                <span id="current-email" class="font-mono text-sm font-bold text-slate-600"></span>
+                <button onclick="copyMail()" class="text-blue-600 p-2 hover:bg-blue-100 rounded-lg"><i data-lucide="copy" class="w-4 h-4"></i></button>
             </div>
-          </div>
-          <div id="error" class="error" style="display:none;margin-top:10px"></div>
+            <div id="scan-bar" class="hidden loader-bar"></div>
         </div>
 
-        <div class="panel">
-          <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:6px">
-            <strong>Hộp thư đến</strong>
-            <span class="muted" id="status">Đang kết nối…</span>
-          </div>
-          <div id="inbox" class="list"></div>
-          <div id="emptyInbox" class="empty" style="display:none">Chưa có thư nào.</div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[300px] overflow-hidden">
+            <div id="inbox-list" class="divide-y divide-slate-100">
+                <div class="p-16 text-center text-slate-400 text-sm italic">Đang đợi thư từ server apple.edu.pl...</div>
+            </div>
         </div>
-      </div>
-
-      <div class="right">
-        <header class="row" style="gap:8px">
-          <div style="flex:1">
-            <div id="viewSubject" style="font-weight:700">Chưa chọn thư</div>
-            <div class="muted" id="viewMeta"></div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <a id="btnDownload" class="ghost" href="#" target="_blank" style="display:none;text-decoration:none;padding:10px 12px;border-radius:12px;border:1px solid #cfe8d9">Tải MIME</a>
-          </div>
-        </header>
-        <div class="viewer">
-          <iframe id="viewer" sandbox></iframe>
-        </div>
-      </div>
     </div>
 
-    <div class="footer">
-      <div>API: <a href="https://dropmail.me/api/" target="_blank" rel="noreferrer">DropMail GraphQL</a></div>
-      <div id="footerInfo">Endpoint WS: wss://dropmail.me/api/graphql/&lt;TOKEN&gt;/websocket</div>
+    <div id="modal" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="p-4 border-b flex justify-between items-center">
+                <span id="modal-title" class="font-bold text-sm text-slate-600 truncate pr-4 uppercase"></span>
+                <button onclick="closeModal()" class="p-2 hover:bg-slate-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="modal-content" class="p-6 overflow-y-auto text-sm leading-relaxed text-slate-700"></div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const API_ROOT_HTTP = 'https://dropmail.me/api/graphql/';
-    const API_ROOT_WS   = 'wss://dropmail.me/api/graphql/';
+    <script>
+        const API = 'https://apple.edu.pl/api';
+        let token = localStorage.getItem('token') || '';
+        let timer = null;
 
-    const els = {
-      address: document.getElementById('address'), sessionId: document.getElementById('sessionId'),
-      btnNew: document.getElementById('btnNew'), btnRefresh: document.getElementById('btnRefresh'),
-      btnCopy: document.getElementById('btnCopy'), btnAddAddr: document.getElementById('btnAddAddr'), btnReset: document.getElementById('btnReset'),
-      inbox: document.getElementById('inbox'), emptyInbox: document.getElementById('emptyInbox'), status: document.getElementById('status'),
-      error: document.getElementById('error'), viewer: document.getElementById('viewer'), viewSubject: document.getElementById('viewSubject'), viewMeta: document.getElementById('viewMeta'), btnDownload: document.getElementById('btnDownload'), footerInfo: document.getElementById('footerInfo')
-    };
+        lucide.createIcons();
+        
+        // Tải danh sách tên miền từ API cũ
+        fetch(`${API}/domains`).then(r => r.json()).then(d => {
+            document.getElementById('domains').innerHTML = d.domains.map(i => `<option value="${i.id}">${i.domain}</option>`).join('');
+        });
 
-    let state = { token:null, sessionId:null, addresses:[], lastMailId:null, ws:null, wsReady:false, poller:null };
+        if (token) start(localStorage.getItem('email'));
 
-    function rand(n=12){ const chars='abcdefghijklmnopqrstuvwxyz0123456789'; let out=''; for(let i=0;i<n;i++) out+=chars[Math.floor(Math.random()*chars.length)]; return out; }
-    function escapeHtml(s=''){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
-    function showError(msg){ els.error.style.display='block'; els.error.textContent = msg; }
-    function clearError(){ els.error.style.display='none'; els.error.textContent=''; }
+        // Quét ngay lập tức khi quay lại tab
+        window.onfocus = () => { if(token) check(); };
 
-    async function gqlHTTP(query, variables){
-      const url = API_ROOT_HTTP + state.token;
-      const res = await fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json','Accept':'application/json' }, body: JSON.stringify({ query, variables }) });
-      if(!res.ok){ const text = await res.text().catch(()=> ''); throw new Error(`HTTP ${res.status} ${res.statusText} – ${text.slice(0,200)}`); }
-      const json = await res.json(); if(json.errors){ throw new Error(json.errors.map(e=>e.message).join('; ')); }
-      return json.data;
-    }
+        async function createMail() {
+            const btn = document.getElementById('btn-create');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin">●</span>`;
 
-    function ensureWS(){
-      return new Promise((resolve,reject)=>{
-        if(state.ws && state.wsReady) return resolve();
-        try{ state.ws = new WebSocket(API_ROOT_WS + state.token + '/websocket', 'graphql-transport-ws'); }
-        catch(e){ return reject(e); }
-        state.ws.addEventListener('open', ()=>{ state.ws.send(JSON.stringify({ type:'connection_init', payload:{} })); });
-        state.ws.addEventListener('message', (ev)=>{ try{ const msg = JSON.parse(ev.data); if(msg.type==='connection_ack'){ state.wsReady=true; resolve(); } }catch{} });
-        state.ws.addEventListener('error', err=>reject(err));
-        state.ws.addEventListener('close', ()=>{ state.wsReady=false; state.ws=null; });
-      });
-    }
+            const fd = new FormData();
+            if (document.getElementById('prefix').value) fd.append('prefix', document.getElementById('prefix').value);
+            fd.append('domain_id', document.getElementById('domains').value);
 
-    function gqlWS(query, variables){
-      return new Promise(async (resolve,reject)=>{
-        try{ await ensureWS(); }catch(e){ return reject(e); }
-        const id = String(Date.now()); let done=false;
-        function onMessage(ev){ try{ const msg = JSON.parse(ev.data); if(msg.id!==id) return; if(msg.type==='next'){ resolve(msg.payload.data); } if(msg.type==='complete'){ done=true; state.ws.removeEventListener('message', onMessage); } if(msg.type==='error'){ reject(new Error(msg.payload?.message||'WS error')); } }catch(e){ reject(e); } }
-        state.ws.addEventListener('message', onMessage);
-        state.ws.send(JSON.stringify({ type:'subscribe', id, payload:{ query, variables } }));
-        setTimeout(()=>{ if(!done){ state.ws.removeEventListener('message', onMessage); reject(new Error('WS timeout')); } }, 10000);
-      });
-    }
+            try {
+                const res = await fetch(`${API}/create-session`, { method: 'POST', body: fd });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('email', data.email);
+                    start(data.email);
+                }
+            } catch (e) { alert("Lỗi API cũ!"); }
+            finally {
+                btn.disabled = false;
+                btn.innerText = "TẠO EMAIL MỚI";
+            }
+        }
 
-    async function gql(query, variables){
-      try{ return await gqlWS(query, variables); }
-      catch(e1){ console.warn('WS failed, fallback to HTTP:', e1); return await gqlHTTP(query, variables); }
-    }
+        function start(email) {
+            document.getElementById('current-email').innerText = email;
+            document.getElementById('active-info').classList.remove('hidden');
+            if (timer) clearInterval(timer);
+            check();
+            timer = setInterval(check, 3000); 
+        }
 
-    async function introduceSession(){
-      const q = `mutation New{ introduceSession { id, expiresAt, addresses { address } } }`;
-      const data = await gql(q,{}); return data.introduceSession;
-    }
-    async function querySession(){
-      const q = `query S($id:ID!){ session(id:$id){ id, expiresAt, addresses{ address }, mails{ id, rawSize, fromAddr, toAddr, downloadUrl, text, headerSubject, html } } }`;
-      const d = await gql(q,{id: state.sessionId}); return d.session;
-    }
-    async function introduceAddress(){
-      const q = `mutation Add($sid:ID!){ introduceAddress(input:{sessionId:$sid}){ address, restoreKey } }`;
-      const d = await gql(q,{sid: state.sessionId}); return d.introduceAddress;
-    }
+        async function check() {
+            if (!token) return;
+            const bar = document.getElementById('scan-bar');
+            bar.classList.remove('hidden');
+            try {
+                const res = await fetch(`${API}/check-mail?token=${token}&_cache=${Date.now()}`);
+                const data = await res.json();
+                if (data.messages) render(data.messages);
+            } catch (e) {}
+            setTimeout(() => bar.classList.add('hidden'), 500);
+        }
 
-    function renderInbox(mails){
-      els.inbox.innerHTML=''; els.emptyInbox.style.display = mails.length? 'none' : 'block';
-      mails.forEach((m)=>{ const div=document.createElement('div'); div.className='item'; const intro=(m.text||'').slice(0,120).replace(/\s+/g,' ').trim(); div.innerHTML=`<div class="top"><div class="from">${escapeHtml(m.fromAddr||'N/A')}</div><span class="pill">${(m.rawSize||0)} B</span></div><div class="subject">${escapeHtml(m.headerSubject||'(Không tiêu đề)')}</div><div class="intro">${escapeHtml(intro)}</div>`; div.addEventListener('click',()=>openMessage(m)); els.inbox.appendChild(div); });
-    }
-    function openMessage(m){
-      els.viewSubject.textContent = m.headerSubject || '(Không tiêu đề)';
-      els.viewMeta.textContent = `Từ: ${m.fromAddr||'N/A'} → ${m.toAddr||'N/A'} · Kích thước: ${m.rawSize||0}B`;
-      const html = Array.isArray(m.html)? m.html.join('\n') : (m.html || null);
-      const text = m.text || '(Không có nội dung)';
-      const content = html || `<pre style="white-space:pre-wrap;font-family:ui-monospace,monospace">${escapeHtml(text)}</pre>`;
-      els.viewer.srcdoc = content; els.btnDownload.style.display = m.downloadUrl? 'inline-flex' : 'none'; if(m.downloadUrl){ els.btnDownload.href = m.downloadUrl; }
-    }
-    function updateHeader(session){ els.sessionId.value = session.id; const addr=(session.addresses&&session.addresses[0]&&session.addresses[0].address)||state.addresses[0]||''; els.address.value=addr; els.status.textContent='Đã cập nhật: '+new Date().toLocaleTimeString(); }
+        function render(msgs) {
+            const list = document.getElementById('inbox-list');
+            if (msgs.length === 0) return;
+            list.innerHTML = msgs.map(m => `
+                <div class="p-4 mail-card flex justify-between items-center" onclick="read(${m.id})">
+                    <div class="overflow-hidden">
+                        <p class="text-[10px] font-bold text-blue-500 uppercase">${m.sender_name}</p>
+                        <h4 class="text-sm font-semibold text-slate-700 truncate">${m.subject}</h4>
+                    </div>
+                    <span class="text-[10px] font-medium text-slate-400">${m.received_at.split(' ')[1]}</span>
+                </div>
+            `).join('');
+        }
 
-    async function refresh(){ try{ const session = await querySession(); if(!session) throw new Error('Phiên đã hết hạn'); state.addresses = session.addresses.map(a=>a.address); renderInbox(session.mails||[]); updateHeader(session); }catch(err){ showError(err.message); } }
-    function startPolling(){ stopPolling(); refresh(); state.poller = setInterval(refresh, 5000); }
-    function stopPolling(){ if(state.poller){ clearInterval(state.poller); state.poller=null; } }
+        async function read(id) {
+            const res = await fetch(`${API}/read-mail?token=${token}&id=${id}&_t=${Date.now()}`);
+            const data = await res.json();
+            document.getElementById('modal-title').innerText = data.message.subject;
+            document.getElementById('modal-content').innerHTML = data.message.body_html || `<pre class="font-sans whitespace-pre-wrap">${data.message.body_text}</pre>`;
+            document.getElementById('modal').classList.replace('hidden', 'flex');
+        }
 
-    function saveLocal(){ localStorage.setItem('dropmail', JSON.stringify({ token: state.token, sessionId: state.sessionId })); }
-    function loadLocal(){ try{ const raw=localStorage.getItem('dropmail'); if(!raw) return false; const d=JSON.parse(raw); if(!d||!d.token||!d.sessionId) return false; state.token=d.token; state.sessionId=d.sessionId; return true; }catch{ return false; } }
-    function clearLocal(){ localStorage.removeItem('dropmail'); }
-
-    async function newSession(){
-      clearError(); stopPolling(); state.token = rand(16);
-      if(els.footerInfo) els.footerInfo.textContent = `Endpoint WS: wss://dropmail.me/api/graphql/${state.token}/websocket`;
-      try{ const s = await introduceSession(); state.sessionId = s.id; saveLocal(); startPolling(); }
-      catch(err){ showError('Tạo phiên lỗi: '+err.message); }
-    }
-    async function resetAll(){ if(!confirm('Xoá phiên hiện tại và tạo phiên mới?')) return; clearLocal(); await newSession(); }
-
-    els.btnNew.onclick = newSession; els.btnRefresh.onclick = refresh;
-    els.btnCopy.onclick = async () => { try{ await navigator.clipboard.writeText(els.address.value); els.btnCopy.textContent='Đã sao chép'; setTimeout(()=> els.btnCopy.textContent='Sao chép',1200);}catch{} };
-    els.btnAddAddr.onclick = async () => { try{ const r = await introduceAddress(); alert('Đã thêm: '+r.address+'\nLưu restoreKey: '+r.restoreKey); refresh(); }catch(err){ showError(err.message); } };
-    els.btnReset.onclick = resetAll;
-
-    (async function init(){ clearError(); if(loadLocal()){ if(els.footerInfo) els.footerInfo.textContent = `Endpoint WS: wss://dropmail.me/api/graphql/${state.token}/websocket`; startPolling(); } else { await newSession(); } })();
-  </script>
+        function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
+        function copyMail() { 
+            navigator.clipboard.writeText(document.getElementById('current-email').innerText);
+            alert("Đã copy!");
+        }
+    </script>
 </body>
 </html>
